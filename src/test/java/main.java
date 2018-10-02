@@ -1,4 +1,4 @@
-import JavaHttpServer.Server;
+import ideaeclipse.JavaHttpServer.Server;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;

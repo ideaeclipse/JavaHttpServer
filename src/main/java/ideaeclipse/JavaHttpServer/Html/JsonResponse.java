@@ -1,4 +1,4 @@
-package JavaHttpServer.Html;
+package ideaeclipse.JavaHttpServer.Html;
 
 import ideaeclipse.JsonUtilities.Json;
 

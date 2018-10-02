@@ -1,10 +1,8 @@
-package JavaHttpServer.Listener;
+package ideaeclipse.JavaHttpServer.Listener;
 
-import JavaHttpServer.Parameters;
-import JavaHttpServer.Writer;
+import ideaeclipse.JavaHttpServer.Parameters;
+import ideaeclipse.JavaHttpServer.Writer;
 import ideaeclipse.reflectionListener.Event;
-
-import java.io.PrintWriter;
 
 /**
  * This is the event that extends {@link Event}

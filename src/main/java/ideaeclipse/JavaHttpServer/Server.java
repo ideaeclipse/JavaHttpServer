@@ -1,7 +1,7 @@
-package JavaHttpServer;
+package ideaeclipse.JavaHttpServer;
 
-import JavaHttpServer.Listener.ConnectionEvent;
-import JavaHttpServer.Listener.PageData;
+import ideaeclipse.JavaHttpServer.Listener.ConnectionEvent;
+import ideaeclipse.JavaHttpServer.Listener.PageData;
 import ideaeclipse.AsyncUtility.Async;
 import ideaeclipse.CustomProperties.Properties;
 import ideaeclipse.reflectionListener.AnnotationSearch;

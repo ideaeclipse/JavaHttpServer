@@ -1,4 +1,4 @@
-package JavaHttpServer;
+package ideaeclipse.JavaHttpServer;
 
 import java.util.*;
 

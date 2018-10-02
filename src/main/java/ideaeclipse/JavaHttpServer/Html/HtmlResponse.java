@@ -1,6 +1,6 @@
-package JavaHttpServer.Html;
+package ideaeclipse.JavaHttpServer.Html;
 
-import JavaHttpServer.Server;
+import ideaeclipse.JavaHttpServer.Server;
 
 import java.io.*;
 import java.util.LinkedList;

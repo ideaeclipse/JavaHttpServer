@@ -1,10 +1,10 @@
 
-import JavaHttpServer.Html.Header;
-import JavaHttpServer.Html.HtmlResponse;
-import JavaHttpServer.Html.JsonResponse;
-import JavaHttpServer.Html.ResponseCodes;
-import JavaHttpServer.Listener.ConnectionEvent;
-import JavaHttpServer.Listener.PageData;
+import ideaeclipse.JavaHttpServer.Html.Header;
+import ideaeclipse.JavaHttpServer.Html.HtmlResponse;
+import ideaeclipse.JavaHttpServer.Html.JsonResponse;
+import ideaeclipse.JavaHttpServer.Html.ResponseCodes;
+import ideaeclipse.JavaHttpServer.Listener.ConnectionEvent;
+import ideaeclipse.JavaHttpServer.Listener.PageData;
 import ideaeclipse.JsonUtilities.Builder;
 import ideaeclipse.JsonUtilities.Json;
 import ideaeclipse.reflectionListener.EventHandler;

@@ -1,6 +1,6 @@
-package JavaHttpServer;
+package ideaeclipse.JavaHttpServer;
 
-import JavaHttpServer.Html.Response;
+import ideaeclipse.JavaHttpServer.Html.Response;
 
 import java.io.PrintWriter;
 

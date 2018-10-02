@@ -1,4 +1,4 @@
-package JavaHttpServer.Html;
+package ideaeclipse.JavaHttpServer.Html;
 
 /**
  * Different possible response codes for html headers

@@ -1,4 +1,4 @@
-package JavaHttpServer.Html;
+package ideaeclipse.JavaHttpServer.Html;
 
 import java.util.Date;
 
