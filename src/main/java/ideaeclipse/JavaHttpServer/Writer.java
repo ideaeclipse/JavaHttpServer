@@ -17,9 +17,10 @@ public class Writer {
         this.out = out;
     }
 
-    public void sendPage(final Response page) {
+    public boolean sendPage(final Response page) {
         out.println(page.getResponse());
         out.flush();
         out.close();
+        return true;
     }
 }

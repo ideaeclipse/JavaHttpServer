@@ -10,7 +10,6 @@ import ideaeclipse.reflectionListener.Handler;
 import ideaeclipse.reflectionListener.Listener;
 
 import java.io.*;
-import java.lang.annotation.Annotation;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -23,7 +22,7 @@ import java.util.*;
 @SuppressWarnings("ALL")
 public class Server {
     private final ServerSocket socket;
-    private final EventManager<Annotation> manager;
+    private final EventManager manager;
     public static Properties properties = new Properties(new String[]{"resourceDirectory", "404FilePath"});
     private Run run;
 
@@ -40,7 +39,7 @@ public class Server {
     public Server(final int port, final Listener listener) throws IOException {
         properties.start();
         socket = new ServerSocket(port);
-        manager = new EventManager<>();
+        manager = new EventManager();
         manager.registerHandler(new Handler<>(PageData.class));
         manager.registerListener(listener);
         while (true) {
@@ -70,7 +69,7 @@ public class Server {
          * @see HttpHeader
          */
         public void run() {
-            Async.queue(() -> {
+            Async.queue(x -> {
                 try {
                     BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
                     PrintWriter out = new PrintWriter(connect.getOutputStream(), true);
@@ -83,14 +82,20 @@ public class Server {
                     }
                     if (header != null && header.getFilePath() != null) {
                         System.out.println("Directory called: " + header.getFilePath());
-                        if (!manager.callEventByAnnotationValue(new ConnectionEvent(parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), header.getFilePath()))) {
-                            manager.callEventByAnnotationValue(new ConnectionEvent(parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, PageData.Method.GET, properties.getProperty("404FilePath")));
+                        Optional<List> pageCall = manager.callEventByAnnotationValue(new ConnectionEvent(parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), header.getFilePath()));
+                        if(pageCall.isPresent()){
+                            Optional<Boolean> temp = (Optional<Boolean>) pageCall.get().get(0);
+                            if(temp.get()){
+                                return Optional.empty();
+                            }
                         }
+                        manager.callEventByAnnotationValue(new ConnectionEvent(parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, PageData.Method.GET, properties.getProperty("404FilePath")));
+
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                return null;
+                return Optional.empty();
             }, "Client Connection");
         }
     }

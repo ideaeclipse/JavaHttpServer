@@ -30,8 +30,8 @@ new Server(8080, new ConnectionListener());
 public class ConnectionListener implements Listener {
     @EventHandler
     @PageData
-    public void connect(ConnectionEvent event) {
-        event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Page.html"));
+    public Boolean connect(ConnectionEvent event) {
+        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Page.html"));
     }
 }
 ```
@@ -45,10 +45,10 @@ public class ConnectionListener implements Listener {
 ```java
 @EventHandler
 @PageData(directory = "/jsonTest")
-public void jsonTest(ConnectionEvent event) {
+public Boolean jsonTest(ConnectionEvent event) {
     Json json = new Json();
     json.put("SomeKey", "SomeValue");
-    event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), json));
+    return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), json));
 }
 ```
 * This would return, this functionality could be used to create a custom rest service
@@ -59,8 +59,8 @@ public void jsonTest(ConnectionEvent event) {
 ```java
 @EventHandler   
 @PageData(directory = "/bootstrapTest")
-public void bootstrapTest(ConnectionEvent event) {
-    event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "BootStrapTest.html"));
+public Boolean bootstrapTest(ConnectionEvent event) {
+    return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "BootStrapTest.html"));
 }
 ```
 
@@ -74,10 +74,10 @@ public void bootstrapTest(ConnectionEvent event) {
 public class ConnectionListener implements Listener {
     @EventHandler
     @PageData
-    public void connect(ConnectionEvent event) {
+    public Boolean connect(ConnectionEvent event) {
         Map<String, Object> map = new HashMap<>();
         map.put("title", "Home page");
-        event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Page.html", map)); 
+        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Page.html", map)); 
     }
 }
 ```
@@ -90,8 +90,8 @@ public class ConnectionListener implements Listener {
 public class ConnectionListener implements Listener {
     @EventHandler
     @PageData(method = PageData.Method.POST, directory = "/postTest")
-    public void postTest(ConnectionEvent event) {
-        event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "PostTest.html")); 
+    public Boolean postTest(ConnectionEvent event) {
+        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "PostTest.html")); 
     }
 }
 ```

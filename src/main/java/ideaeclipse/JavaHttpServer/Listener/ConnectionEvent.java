@@ -3,6 +3,7 @@ package ideaeclipse.JavaHttpServer.Listener;
 import ideaeclipse.JavaHttpServer.Parameters;
 import ideaeclipse.JavaHttpServer.Writer;
 import ideaeclipse.reflectionListener.Event;
+import ideaeclipse.reflectionListener.ReturnHandler;
 
 /**
  * This is the event that extends {@link Event}
@@ -10,6 +11,7 @@ import ideaeclipse.reflectionListener.Event;
  *
  * @author Ideaeclipse
  */
+@ReturnHandler(returnType = Boolean.class)
 public class ConnectionEvent extends Event {
     private final Parameters parameters;
     private final Writer printWriter;
