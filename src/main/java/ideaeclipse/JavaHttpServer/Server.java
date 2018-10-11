@@ -84,8 +84,8 @@ public class Server {
                         System.out.println("Directory called: " + header.getFilePath());
                         Optional<List> pageCall = manager.callEventByAnnotationValue(new ConnectionEvent(parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), header.getFilePath()));
                         if(pageCall.isPresent()){
-                            Optional<Boolean> temp = (Optional<Boolean>) pageCall.get().get(0);
-                            if(temp.get()){
+                            Boolean temp = (Boolean) pageCall.get().get(0);
+                            if(temp){
                                 return Optional.empty();
                             }
                         }
