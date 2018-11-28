@@ -56,7 +56,16 @@ public class ConnectionListener implements Listener {
     public Boolean bootstrapTest(ConnectionEvent event) {
         return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "BootStrapTest.html"));
     }
-
+    @EventHandler
+    @PageData(directory = "/snake")
+    public Boolean snake(ConnectionEvent event){
+        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Test.html"));
+    }
+    @EventHandler
+    @PageData(directory = "/latex")
+    public Boolean latex(ConnectionEvent event){
+        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Latex.html"));
+    }
     public static class Mapper {
         public Integer a;
         public String string;

@@ -6,7 +6,7 @@
 
     <groupId>com.ideaeclipse</groupId>
     <artifactId>JavaHttpServer</artifactId>
-    <version>1.0</version>
+    <version>1.6</version>
     <build>
         <pluginManagement>
             <plugins>
@@ -25,12 +25,12 @@
         <dependency>
             <groupId>com.ideaeclipse</groupId>
             <artifactId>Async</artifactId>
-            <version>RELEASE</version>
+            <version>LATEST</version>
         </dependency>
         <dependency>
             <groupId>com.ideaeclipse</groupId>
             <artifactId>reflectionListener</artifactId>
-            <version>RELEASE</version>
+            <version>3.2</version>
         </dependency>
         <dependency>
             <groupId>com.ideaeclipse</groupId>
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>com.ideaeclipse</groupId>
             <artifactId>JsonUtilities</artifactId>
-            <version>1.2</version>
+            <version>1.8</version>
         </dependency>
     </dependencies>
     <distributionManagement>
