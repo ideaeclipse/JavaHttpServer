@@ -1,4 +1,3 @@
-
 import ideaeclipse.JavaHttpServer.Html.Header;
 import ideaeclipse.JavaHttpServer.Html.HtmlResponse;
 import ideaeclipse.JavaHttpServer.Html.JsonResponse;
@@ -56,6 +55,17 @@ public class ConnectionListener implements Listener {
     public Boolean bootstrapTest(ConnectionEvent event) {
         return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "BootStrapTest.html"));
     }
+    /*
+    @EventHandler
+    @PageData(directory = "/latex")
+    public Boolean latex(ConnectionEvent event) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("string", event.getParameters().getMap().get("string").replace("%20", " "));
+        System.out.println(map);
+        //\[ x^n + y^n = z^n \]
+        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "latex.html", map));
+    }
+    */
 
     public static class Mapper {
         public Integer a;
