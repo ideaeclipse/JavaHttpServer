@@ -73,25 +73,27 @@ public class Server {
                 try {
                     BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
                     PrintWriter out = new PrintWriter(connect.getOutputStream(), true);
-
                     HttpHeader header = null;
                     Parameters parameters = null;
                     String input = in.readLine();
+                    System.out.println(input);
                     if (input != null) {
                         header = new HttpHeader(new StringTokenizer(input));
                         parameters = header.getParameters();
                     }
                     if (header != null && header.getFilePath() != null) {
-                        String token = getToken(in);
-                        System.out.println("Directory called: " + header.getFilePath());
-                        Optional<List> pageCall = manager.callEventByAnnotationValue(new ConnectionEvent(token, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), header.getFilePath()));
+                        Map<String,String> metaData = getData(in,header.getMethod());
+                        String token = metaData.get("token");
+                        String data = metaData.get("data");
+                        System.out.println(data);
+                        Optional<List> pageCall = manager.callEventByAnnotationValue(new ConnectionEvent(token != null ? token : null, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), header.getFilePath()));
                         if (pageCall.isPresent()) {
                             Boolean temp = (Boolean) pageCall.get().get(0);
                             if (temp) {
                                 return Optional.empty();
                             }
                         }
-                        manager.callEventByAnnotationValue(new ConnectionEvent(token, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), properties.getProperty("404FilePath")));
+                        manager.callEventByAnnotationValue(new ConnectionEvent(token != null ? token : null,data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("404FilePath")));
                     }
 
                 } catch (IOException e) {
@@ -101,16 +103,26 @@ public class Server {
             }, "Client Connection");
         }
 
-        private String getToken(final BufferedReader in) throws IOException {
+        private Map<String,String> getData(final BufferedReader in,final String method) throws IOException {
             String newLine;
-            String token = null;
-            while ((newLine = in.readLine()) != null) {
-                if (newLine.isEmpty())
-                    break;
+            Map<String,String> metaData = new HashMap<>();
+            int contentLength = 0;
+            while (!(newLine = in.readLine()).equals("")) {
+                if(method.equals("POST")) {
+                    final String contentHeader = "Content-Length: ";
+                    if (newLine.startsWith(contentHeader)) {
+                        contentLength = Integer.parseInt(newLine.substring(contentHeader.length()));
+                    }
+                }
                 if (newLine.startsWith("Authorization"))
-                    token = newLine.substring(newLine.indexOf(":") + 2);
+                    metaData.put("token",newLine.substring(newLine.indexOf(":") + 2));
             }
-            return token;
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < contentLength; i++)
+                builder.append((char) in.read());
+            metaData.put("data",builder.toString());
+
+            return metaData;
         }
     }
 }

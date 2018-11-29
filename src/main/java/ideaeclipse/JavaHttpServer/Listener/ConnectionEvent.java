@@ -13,7 +13,7 @@ import ideaeclipse.reflectionListener.ReturnHandler;
  */
 @ReturnHandler(returnType = Boolean.class)
 public class ConnectionEvent extends Event {
-    private final String token;
+    private final String token,data;
     private final Parameters parameters;
     private final Writer printWriter;
 
@@ -21,14 +21,19 @@ public class ConnectionEvent extends Event {
      * @param parameters
      * @param writer
      */
-    public ConnectionEvent(final String token, final Parameters parameters, final Writer writer) {
+    public ConnectionEvent(final String token, final String data,final Parameters parameters, final Writer writer) {
         this.token = token;
+        this.data = data;
         this.parameters = parameters;
         this.printWriter = writer;
     }
 
     public String getToken() {
         return token;
+    }
+
+    public String getData() {
+        return data;
     }
 
     public Parameters getParameters() {

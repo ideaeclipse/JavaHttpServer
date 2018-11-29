@@ -17,6 +17,7 @@ public class ConnectionListener implements Listener {
     @PageData
     public Boolean connect(ConnectionEvent event) {
         Map<String, Object> map = new HashMap<>();
+        System.out.println("called");
         map.put("title", "Home page");
         return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Page.html", map));
     }
