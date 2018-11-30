@@ -88,7 +88,7 @@ public class ConnectionListener implements Listener {
     @PageData(directory = "/users/:username/name")
     public Boolean dynamicDirectory(final DynamicConnectionEvent event) {
         Json json = new Json();
-        json.put("username", event.getDynamicVariable());
+        json.put("username", event.getDynamicValue());
         return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), json));
     }
 

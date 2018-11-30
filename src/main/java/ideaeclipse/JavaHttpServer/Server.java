@@ -158,7 +158,7 @@ public class Server {
          * the return value would be /users/:username/id&ideaeclipse
          * And you can parse that based on the index of the and sign.
          * This dynamic value then gets passed in the {@link DynamicConnectionEvent}
-         * you can call it by using the method {@link DynamicConnectionEvent#getDynamicVariable()}
+         * you can call it by using the method {@link DynamicConnectionEvent#getDynamicValue()}
          *
          * @param dir requested directory
          * @return dynamic directory&dynamicValue
