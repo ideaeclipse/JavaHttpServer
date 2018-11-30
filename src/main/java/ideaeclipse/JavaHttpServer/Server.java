@@ -4,6 +4,7 @@ import ideaeclipse.JavaHttpServer.Listener.ConnectionEvent;
 import ideaeclipse.JavaHttpServer.Listener.PageData;
 import ideaeclipse.AsyncUtility.Async;
 import ideaeclipse.CustomProperties.Properties;
+import ideaeclipse.JsonUtilities.Json;
 import ideaeclipse.reflectionListener.AnnotationSearch;
 import ideaeclipse.reflectionListener.EventManager;
 import ideaeclipse.reflectionListener.Handler;
@@ -23,7 +24,7 @@ import java.util.*;
 public class Server {
     private final ServerSocket socket;
     private final EventManager manager;
-    public static Properties properties = new Properties(new String[]{"resourceDirectory", "404FilePath"});
+    public static Properties properties = new Properties(new String[]{"resourceDirectory", "404FilePath", "WrongParameters"});
     private Run run;
 
     /**
@@ -82,18 +83,23 @@ public class Server {
                         parameters = header.getParameters();
                     }
                     if (header != null && header.getFilePath() != null) {
-                        Map<String,String> metaData = getData(in,header.getMethod());
+                        Map<String, String> metaData = getData(in, header.getMethod());
                         String token = metaData.get("token");
                         String data = metaData.get("data");
-                        System.out.println(data);
                         Optional<List> pageCall = manager.callEventByAnnotationValue(new ConnectionEvent(token != null ? token : null, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), header.getFilePath()));
                         if (pageCall.isPresent()) {
-                            Boolean temp = (Boolean) pageCall.get().get(0);
+                            Boolean temp = Boolean.parseBoolean(String.valueOf(pageCall.get().get(0)));
                             if (temp) {
                                 return Optional.empty();
                             }
                         }
-                        manager.callEventByAnnotationValue(new ConnectionEvent(token != null ? token : null,data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("404FilePath")));
+                        if (data == null)
+                            manager.callEventByAnnotationValue(new ConnectionEvent(token != null ? token : null, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("404FilePath")));
+                        else {
+                            Json invalid = new Json();
+                            invalid.put("Missing Parameter", pageCall.get().get(0));
+                            manager.callEventByAnnotationValue(new ConnectionEvent(token != null ? token : null, invalid.toString(), parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("WrongParameters")));
+                        }
                     }
 
                 } catch (IOException e) {
@@ -103,24 +109,24 @@ public class Server {
             }, "Client Connection");
         }
 
-        private Map<String,String> getData(final BufferedReader in,final String method) throws IOException {
+        private Map<String, String> getData(final BufferedReader in, final String method) throws IOException {
             String newLine;
-            Map<String,String> metaData = new HashMap<>();
+            Map<String, String> metaData = new HashMap<>();
             int contentLength = 0;
             while (!(newLine = in.readLine()).equals("")) {
-                if(method.equals("POST")) {
+                if (method.equals("POST")) {
                     final String contentHeader = "Content-Length: ";
                     if (newLine.startsWith(contentHeader)) {
                         contentLength = Integer.parseInt(newLine.substring(contentHeader.length()));
                     }
                 }
                 if (newLine.startsWith("Authorization"))
-                    metaData.put("token",newLine.substring(newLine.indexOf(":") + 2));
+                    metaData.put("token", newLine.substring(newLine.indexOf(":") + 2));
             }
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < contentLength; i++)
                 builder.append((char) in.read());
-            metaData.put("data",builder.toString());
+            metaData.put("data", builder.toString().length() == 0 ? null : builder.toString());
 
             return metaData;
         }

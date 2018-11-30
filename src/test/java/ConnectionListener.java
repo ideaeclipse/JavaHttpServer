@@ -9,6 +9,7 @@ import ideaeclipse.JsonUtilities.Builder;
 import ideaeclipse.JsonUtilities.Json;
 import ideaeclipse.reflectionListener.EventHandler;
 import ideaeclipse.reflectionListener.Listener;
+import ideaeclipse.reflectionListener.ParamAnnotation;
 
 import java.util.*;
 
@@ -17,7 +18,6 @@ public class ConnectionListener implements Listener {
     @PageData
     public Boolean connect(ConnectionEvent event) {
         Map<String, Object> map = new HashMap<>();
-        System.out.println("called");
         map.put("title", "Home page");
         return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Page.html", map));
     }
@@ -57,16 +57,31 @@ public class ConnectionListener implements Listener {
     public Boolean bootstrapTest(ConnectionEvent event) {
         return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "BootStrapTest.html"));
     }
+
     @EventHandler
     @PageData(directory = "/snake")
-    public Boolean snake(ConnectionEvent event){
+    public Boolean snake(ConnectionEvent event) {
         return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Test.html"));
     }
+
     @EventHandler
     @PageData(directory = "/latex")
-    public Boolean latex(ConnectionEvent event){
+    public Boolean latex(ConnectionEvent event) {
         return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Latex.html"));
     }
+
+    @EventHandler
+    @PageData(method = PageData.Method.POST, directory = "/jsp")
+    public Boolean jsonPostTest(@ParamAnnotation(value = "username") final ConnectionEvent event) {
+        return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_404), new Json()));
+    }
+
+    @EventHandler
+    @PageData(directory = "/404Json")
+    public Boolean wrongJsonParameters(final ConnectionEvent event) {
+        return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_404), event.getData()));
+    }
+
     public static class Mapper {
         public Integer a;
         public String string;

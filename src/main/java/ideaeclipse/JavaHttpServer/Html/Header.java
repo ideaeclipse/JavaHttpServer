@@ -12,7 +12,7 @@ public class Header {
     private String header = "";
 
     public Header(final ResponseCodes codes) {
-        header += "HTTP/1.1 " + codes.ordinal() + " " + codes.getString() + "\n";
+        header += "HTTP/1.1 " + codes.name().substring(codes.name().indexOf("_")+1) + " " + codes.getString() + "\n";
         header += "Server: Java HTTP Server 1.0" + "\n";
         header += "Date: " + new Date() + "\n";
         header += "Content-Type: text/html" + "\n\n";
