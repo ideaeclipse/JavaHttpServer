@@ -4,12 +4,14 @@ import ideaeclipse.JavaHttpServer.Html.HtmlResponse;
 import ideaeclipse.JavaHttpServer.Html.JsonResponse;
 import ideaeclipse.JavaHttpServer.Html.ResponseCodes;
 import ideaeclipse.JavaHttpServer.Listener.ConnectionEvent;
+import ideaeclipse.JavaHttpServer.Listener.DynamicConnectionEvent;
 import ideaeclipse.JavaHttpServer.Listener.PageData;
 import ideaeclipse.JsonUtilities.Builder;
 import ideaeclipse.JsonUtilities.Json;
-import ideaeclipse.reflectionListener.EventHandler;
 import ideaeclipse.reflectionListener.Listener;
-import ideaeclipse.reflectionListener.ParamAnnotation;
+import ideaeclipse.reflectionListener.annotations.EventHandler;
+import ideaeclipse.reflectionListener.annotations.ParamAnnotation;
+import ideaeclipse.reflectionListener.callByAnnotation.dynamicAnnotations.DynamicEvent;
 
 import java.util.*;
 
@@ -80,6 +82,14 @@ public class ConnectionListener implements Listener {
     @PageData(directory = "/404Json")
     public Boolean wrongJsonParameters(final ConnectionEvent event) {
         return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_404), event.getData()));
+    }
+
+    @EventHandler
+    @PageData(directory = "/users/:username/name")
+    public Boolean dynamicDirectory(final DynamicConnectionEvent event) {
+        Json json = new Json();
+        json.put("username", event.getDynamicVariable());
+        return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), json));
     }
 
     public static class Mapper {
