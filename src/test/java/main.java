@@ -1,18 +1,27 @@
+import ideaeclipse.JavaHttpServer.Listener.RequiresAuthorization;
 import ideaeclipse.JavaHttpServer.Server;
+import ideaeclipse.reflectionListener.Listener;
 
-import java.awt.*;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.Objects;
 
 public class main {
-    public static void main(String[] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) throws IOException {
         /*
         Desktop desktop = java.awt.Desktop.getDesktop();
         URI oURL = new URI("http://localhost:8080/?key1=5&key2=string");
         desktop.browse(oURL);
         */
-        new Server(8080, new ConnectionListener());
+        Listener listener = new ConnectionListener();
+        RequiresAuthorization check = new RequiresAuthorization(listener) {
+
+            @Override
+            public Boolean handleToken(String token) {
+                System.out.println(token);
+                return Objects.equals(token,"token");
+            }
+        };
+        new Server(8080,listener, check);
     }
 }
 

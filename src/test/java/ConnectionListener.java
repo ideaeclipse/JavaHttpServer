@@ -6,7 +6,7 @@ import ideaeclipse.JavaHttpServer.Html.ResponseCodes;
 import ideaeclipse.JavaHttpServer.Listener.ConnectionEvent;
 import ideaeclipse.JavaHttpServer.Listener.DynamicConnectionEvent;
 import ideaeclipse.JavaHttpServer.Listener.PageData;
-import ideaeclipse.JavaHttpServer.Listener.RequiresAuthorization;
+import ideaeclipse.JavaHttpServer.Listener.Authorization;
 import ideaeclipse.JsonUtilities.Builder;
 import ideaeclipse.JsonUtilities.Json;
 import ideaeclipse.reflectionListener.Listener;
@@ -94,7 +94,7 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     @PageData(method = PageData.Method.POST, directory = "/auth")
-    public Boolean authTest(@RequiresAuthorization @ParamAnnotation(value = {"name"}) final ConnectionEvent event) {
+    public Boolean authTest(@Authorization @ParamAnnotation(value = {"name"}) final ConnectionEvent event) {
         return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), new Json()));
     }
 
