@@ -5,6 +5,7 @@ import ideaeclipse.JavaHttpServer.Listener.DynamicConnectionEvent;
 import ideaeclipse.JavaHttpServer.Listener.PageData;
 import ideaeclipse.AsyncUtility.Async;
 import ideaeclipse.CustomProperties.Properties;
+import ideaeclipse.JavaHttpServer.Listener.RequiresAuthorization;
 import ideaeclipse.JsonUtilities.Json;
 import ideaeclipse.reflectionListener.EventManager;
 import ideaeclipse.reflectionListener.Listener;
@@ -91,24 +92,30 @@ public class Server {
                         String data = metaData.get("data");
                         String dynamic = isDynamic(header.getFilePath());
                         if (Boolean.parseBoolean(dynamic)) {
-                            Optional<List> pageCall = manager.callEventByAnnotationValue(new ConnectionEvent(token, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), header.getFilePath()));
-                            if (pageCall.isPresent()) {
-                                boolean temp = Boolean.parseBoolean(String.valueOf(pageCall.get().get(0)));
-                                if (temp) {
-                                    return Optional.empty();
+                            if (requiresAuth(header.getFilePath(), token)) {
+                                Optional<List> pageCall = manager.callEventByAnnotationValue(new ConnectionEvent(token, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), header.getFilePath()));
+                                if (pageCall.isPresent()) {
+                                    boolean temp = Boolean.parseBoolean(String.valueOf(pageCall.get().get(0)));
+                                    if (temp) {
+                                        return Optional.empty();
+                                    }
                                 }
-                            }
-                            if (data == null)
-                                manager.callEventByAnnotationValue(new ConnectionEvent(token, null, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("404FilePath")));
-                            else {
-                                Json invalid = new Json();
-                                pageCall.ifPresent(list -> invalid.put("Missing Parameter", list.get(0)));
-                                manager.callEventByAnnotationValue(new ConnectionEvent(token, invalid.toString(), parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("WrongParameters")));
-                            }
+                                if (data == null)
+                                    manager.callEventByAnnotationValue(new ConnectionEvent(token, null, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("404FilePath")));
+                                else {
+                                    Json invalid = new Json();
+                                    pageCall.ifPresent(list -> invalid.put("Missing Parameter", list.get(0)));
+                                    manager.callEventByAnnotationValue(new ConnectionEvent(token, invalid.toString(), parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("WrongParameters")));
+                                }
+                            } else
+                                callUnAuthorized(token, parameters, out);
                         } else {
                             String dir = dynamic.substring(0, dynamic.indexOf("&"));
                             String dynamicValue = dynamic.substring(dynamic.indexOf("&") + 1);
-                            manager.callEventByAnnotationValue(new DynamicConnectionEvent(dynamicValue, token, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), dir));
+                            if (requiresAuth(dir, token))
+                                manager.callEventByAnnotationValue(new DynamicConnectionEvent(dynamicValue, token, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), dir));
+                            else
+                                callUnAuthorized(token, parameters, out);
                         }
                     }
 
@@ -118,12 +125,20 @@ public class Server {
                 return Optional.empty();
             }, "Client Connection");
         }
+        /**
+         * Sends a json responses if the request required a token and didn't receive it
+         */
+        private void callUnAuthorized(final String token, final Parameters parameters, final PrintWriter out) {
+            Json invalid = new Json();
+            invalid.put("Authorization", false);
+            manager.callEventByAnnotationValue(new ConnectionEvent(token, invalid.toString(), parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("WrongParameters")));
+        }
 
         /**
          * Parses the request header
          * Currently only takes the Authorization header and any data attached on.
          *
-         * @param in reader
+         * @param in     reader
          * @param method post/not
          * @return map of token,data
          * @throws IOException if the buffered reader is not initialized correctly
@@ -167,6 +182,7 @@ public class Server {
             List<Method> filteredMethods = Arrays.stream(listener.getClass().getDeclaredMethods()).filter(o -> o.getParameterTypes()[0].equals(DynamicConnectionEvent.class)).collect(Collectors.toList());
             for (Method m : filteredMethods) {
                 List<Annotation> annotations = Arrays.stream(m.getDeclaredAnnotations()).filter(o -> o.annotationType().equals(PageData.class)).collect(Collectors.toList());
+                annotations = annotations.stream().filter(o -> o.annotationType().equals(PageData.class)).collect(Collectors.toList());
                 PageData annotation = (PageData) annotations.get(0);
                 List<String> split = Arrays.asList(annotation.directory().substring(1).split("/"));
                 List<String> dirSplit = Arrays.asList(dir.substring(1).split("/"));
@@ -182,6 +198,27 @@ public class Server {
                 }
             }
             return String.valueOf(true);
+        }
+
+        /**
+         * Checks whether the users requests requires an authorization tokeb
+         * @param dir requested directory
+         * @param token provided token
+         * @return status of authorization requirment
+         */
+        private Boolean requiresAuth(final String dir, final String token) {
+            Method[] methods = listener.getClass().getDeclaredMethods();
+            for (Method m : methods) {
+                List<Annotation> list = Arrays.stream(m.getDeclaredAnnotations()).filter(o -> o.annotationType().equals(PageData.class)).collect(Collectors.toList());
+                PageData annotation = (PageData) list.get(0);
+                if (annotation.directory().equals(dir)) {
+                    List<Annotation> filtered = Arrays.stream(m.getParameterAnnotations()[0]).filter(o -> o.annotationType().equals(RequiresAuthorization.class)).collect(Collectors.toList());
+                    if (!filtered.isEmpty()) {
+                        return token != null;
+                    }
+                }
+            }
+            return true;
         }
     }
 }

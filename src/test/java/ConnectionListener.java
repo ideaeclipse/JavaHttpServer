@@ -6,12 +6,12 @@ import ideaeclipse.JavaHttpServer.Html.ResponseCodes;
 import ideaeclipse.JavaHttpServer.Listener.ConnectionEvent;
 import ideaeclipse.JavaHttpServer.Listener.DynamicConnectionEvent;
 import ideaeclipse.JavaHttpServer.Listener.PageData;
+import ideaeclipse.JavaHttpServer.Listener.RequiresAuthorization;
 import ideaeclipse.JsonUtilities.Builder;
 import ideaeclipse.JsonUtilities.Json;
 import ideaeclipse.reflectionListener.Listener;
 import ideaeclipse.reflectionListener.annotations.EventHandler;
 import ideaeclipse.reflectionListener.annotations.ParamAnnotation;
-import ideaeclipse.reflectionListener.callByAnnotation.dynamicAnnotations.DynamicEvent;
 
 import java.util.*;
 
@@ -90,6 +90,12 @@ public class ConnectionListener implements Listener {
         Json json = new Json();
         json.put("username", event.getDynamicValue());
         return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), json));
+    }
+
+    @EventHandler
+    @PageData(method = PageData.Method.POST, directory = "/auth")
+    public Boolean authTest(@RequiresAuthorization @ParamAnnotation(value = {"name"}) final ConnectionEvent event) {
+        return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), new Json()));
     }
 
     public static class Mapper {
