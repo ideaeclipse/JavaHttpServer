@@ -26,6 +26,7 @@ public class Server {
     private final EventManager manager;
     private final Listener listener;
     private final RequiresAuthorization check;
+    private final RequiresData dataCheck;
     public static Properties properties = new Properties(new String[]{"resourceDirectory", "404FilePath", "WrongParameters"});
 
     /**
@@ -44,6 +45,7 @@ public class Server {
         manager = new EventManager();
         this.listener = listener;
         this.check = check;
+        this.dataCheck = new RequiresData(listener);
         manager.registerHandler(new Handler<>(PageData.class));
         manager.registerListener(listener);
         while (true) {
@@ -85,37 +87,45 @@ public class Server {
                         header = new HttpHeader(new StringTokenizer(input));
                         parameters = header.getParameters();
                     }
+
                     if (header != null && header.getFilePath() != null) {
                         Map<String, String> metaData = getData(in, header.getMethod());
                         String token = metaData.get("token");
                         String data = metaData.get("data");
                         String dynamic = isDynamic(header.getFilePath());
                         if (Boolean.parseBoolean(dynamic)) {
+                            Json invalid = new Json();
                             if (check.requiresAuth(header.getFilePath(), token)) {
-                                Optional<List> pageCall = manager.callEventByAnnotationValue(new ConnectionEvent(token, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), header.getFilePath()));
-                                if (pageCall.isPresent()) {
-                                    boolean temp = Boolean.parseBoolean(String.valueOf(pageCall.get().get(0)));
-                                    if (temp) {
-                                        return Optional.empty();
+                                if (dataCheck.requiresData(data, header.getFilePath())) {
+                                    Optional<List> pageCall = manager.callEventByAnnotationValue(new ConnectionEvent(token, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, getMethod(header.getMethod()), header.getFilePath()));
+                                    if (pageCall.isPresent()) {
+                                        boolean temp = Boolean.parseBoolean(String.valueOf(pageCall.get().get(0)));
+                                        if (temp) {
+                                            return Optional.empty();
+                                        }
                                     }
-                                }
-                                if (data == null)
-                                    manager.callEventByAnnotationValue(new ConnectionEvent(token, null, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("404FilePath")));
-                                else {
-                                    Json invalid = new Json();
-                                    pageCall.ifPresent(list -> invalid.put("Missing Parameter", list.get(0)));
-                                    manager.callEventByAnnotationValue(new ConnectionEvent(token, invalid.toString(), parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("WrongParameters")));
-                                }
+                                    notFound(getMethod(header.getMethod()), token, new Json(), parameters, out);
+                                    return Optional.empty();
+                                } else
+                                    invalid.put("status", "missing parameters " + dataCheck.getRequires());
                             } else
-                                callUnAuthorized(token, parameters, out);
+                                invalid.put("status", "authorization is incorrect");
+                            printJson(invalid, token, parameters, out);
+                            return Optional.empty();
                         } else {
                             String dir = dynamic.substring(0, dynamic.indexOf("&"));
                             String dynamicValue = dynamic.substring(dynamic.indexOf("&") + 1);
-                            if (check.requiresAuth(dir, token))
-                                manager.callEventByAnnotationValue(new DynamicConnectionEvent(dynamicValue, token, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, header.getMethod(), dir));
-                            else
-                                callUnAuthorized(token, parameters, out);
+                            if (check.requiresAuth(dir, token)) {
+                                Optional<List> pageCall = manager.callEventByAnnotationValue(new DynamicConnectionEvent(dynamicValue, token, data, parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, getMethod(header.getMethod()), dir));
+                                if (!pageCall.isPresent())
+                                    notFound(getMethod(header.getMethod()), token, new Json(), parameters, out);
+                            } else {
+                                Json invalid = new Json();
+                                invalid.put("status", "authorization is incorrect");
+                                printJson(invalid, token, parameters, out);
+                            }
                         }
+
                     }
 
                 } catch (IOException e) {
@@ -126,12 +136,36 @@ public class Server {
         }
 
         /**
+         * Convert method to pageData object
+         *
+         * @param input header method
+         * @return pageData equivalent
+         */
+        private PageData.Method getMethod(final String input) {
+            switch (input.toLowerCase()) {
+                case "post":
+                    return PageData.Method.POST;
+                case "put":
+                    return PageData.Method.PUT;
+                case "delete":
+                    return PageData.Method.DELETE;
+                default:
+                    return PageData.Method.GET;
+            }
+        }
+
+        private void notFound(final PageData.Method method, final String token, final Json data, final Parameters parameters, final PrintWriter out) {
+            if (method.equals(PageData.Method.POST))
+                manager.callEventByAnnotationValue(new ConnectionEvent(token, data.toString(), parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, PageData.Method.GET, properties.getProperty("WrongParameters")));
+            else
+                manager.callEventByAnnotationValue(new ConnectionEvent(token, data.toString(), parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, PageData.Method.GET, properties.getProperty("404FilePath")));
+        }
+
+        /**
          * Sends a json responses if the request required a token and didn't receive it
          */
-        private void callUnAuthorized(final String token, final Parameters parameters, final PrintWriter out) {
-            Json invalid = new Json();
-            invalid.put("status", "authorization is incorrect");
-            manager.callEventByAnnotationValue(new ConnectionEvent(token, invalid.toString(), parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, "GET", properties.getProperty("WrongParameters")));
+        private void printJson(final Json json, final String token, final Parameters parameters, final PrintWriter out) {
+            manager.callEventByAnnotationValue(new ConnectionEvent(token, json.toString(), parameters != null ? parameters : new Parameters(), new Writer(out)), new AnnotationSearch(PageData.class, PageData.Method.GET, properties.getProperty("WrongParameters")));
         }
 
         /**

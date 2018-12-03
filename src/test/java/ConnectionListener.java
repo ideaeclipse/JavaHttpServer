@@ -3,15 +3,11 @@ import ideaeclipse.JavaHttpServer.Html.Header;
 import ideaeclipse.JavaHttpServer.Html.HtmlResponse;
 import ideaeclipse.JavaHttpServer.Html.JsonResponse;
 import ideaeclipse.JavaHttpServer.Html.ResponseCodes;
-import ideaeclipse.JavaHttpServer.Listener.ConnectionEvent;
-import ideaeclipse.JavaHttpServer.Listener.DynamicConnectionEvent;
-import ideaeclipse.JavaHttpServer.Listener.PageData;
-import ideaeclipse.JavaHttpServer.Listener.Authorization;
+import ideaeclipse.JavaHttpServer.Listener.*;
 import ideaeclipse.JsonUtilities.Builder;
 import ideaeclipse.JsonUtilities.Json;
 import ideaeclipse.reflectionListener.Listener;
 import ideaeclipse.reflectionListener.annotations.EventHandler;
-import ideaeclipse.reflectionListener.annotations.ParamAnnotation;
 
 import java.util.*;
 
@@ -74,7 +70,7 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     @PageData(method = PageData.Method.POST, directory = "/jsp")
-    public Boolean jsonPostTest(@ParamAnnotation(value = "username") final ConnectionEvent event) {
+    public Boolean jsonPostTest(final ConnectionEvent event) {
         return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_404), new Json()));
     }
 
@@ -93,8 +89,10 @@ public class ConnectionListener implements Listener {
     }
 
     @EventHandler
+    @Authorization
+    @Data(values = {"name","value"})
     @PageData(method = PageData.Method.POST, directory = "/auth")
-    public Boolean authTest(@Authorization @ParamAnnotation(value = {"name"}) final ConnectionEvent event) {
+    public Boolean authTest(final ConnectionEvent event) {
         return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), new Json()));
     }
 

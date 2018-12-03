@@ -17,7 +17,6 @@ public class main {
 
             @Override
             public Boolean handleToken(String token) {
-                System.out.println(token);
                 return Objects.equals(token,"token");
             }
         };
