@@ -213,7 +213,7 @@ public class Server {
          * @return dynamic directory&dynamicValue
          */
         private String isDynamic(final String dir) {
-            List<Method> filteredMethods = Arrays.stream(listener.getClass().getDeclaredMethods()).filter(o -> o.getParameterTypes()[0].equals(DynamicConnectionEvent.class)).collect(Collectors.toList());
+            List<Method> filteredMethods = Arrays.stream(listener.getClass().getDeclaredMethods()).filter(o -> o.getParameterTypes().length > 1 && o.getParameterTypes()[0].equals(DynamicConnectionEvent.class)).collect(Collectors.toList());
             for (Method m : filteredMethods) {
                 List<Annotation> annotations = Arrays.stream(m.getDeclaredAnnotations()).filter(o -> o.annotationType().equals(PageData.class)).collect(Collectors.toList());
                 annotations = annotations.stream().filter(o -> o.annotationType().equals(PageData.class)).collect(Collectors.toList());
