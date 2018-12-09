@@ -12,6 +12,9 @@ import ideaeclipse.reflectionListener.annotations.EventHandler;
 import java.util.*;
 
 public class ConnectionListener implements Listener {
+    private void test(){
+        System.out.println("test");
+    }
     @EventHandler
     @PageData
     public Boolean connect(ConnectionEvent event) {
