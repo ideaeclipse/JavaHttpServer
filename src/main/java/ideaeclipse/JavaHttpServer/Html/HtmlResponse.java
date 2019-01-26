@@ -19,23 +19,23 @@ public class HtmlResponse implements Response {
     private final Map<String, Object> map;
 
     /**
-     * @param header   html header
+     * @param code     response code
      * @param fileName html file name in directory "resourceDirectory"
      * @param map      CustomEjs map of data you need to import into your file
      */
-    public HtmlResponse(final Header header, final String fileName, final Map<String, Object> map) {
-        this.header = header;
+    public HtmlResponse(final ResponseCodes code, final String fileName, final Map<String, Object> map) {
+        this.header = new Header(code);
         this.file = new File(Server.properties.getProperty("resourceDirectory") + "/" + fileName);
         this.map = map;
         this.builder = new StringBuilder();
     }
 
     /**
-     * @param header   html header
+     * @param code     response code
      * @param fileName html file name in directory "resourceDirectory"
      */
-    public HtmlResponse(final Header header, final String fileName) {
-        this(header, fileName, null);
+    public HtmlResponse(final ResponseCodes code, final String fileName) {
+        this(code, fileName, null);
     }
 
     /**

@@ -12,8 +12,8 @@ public class JsonResponse implements Response{
     private final Header header;
     private final Json json;
 
-    public JsonResponse(final Header header, final Json json) {
-        this.header = header;
+    public JsonResponse(final ResponseCodes code, final Json json) {
+        this.header = new Header(code);
         this.json = json;
     }
 

@@ -17,13 +17,13 @@ public class ConnectionListener implements Listener {
     public Boolean connect(ConnectionEvent event) {
         Map<String, Object> map = new HashMap<>();
         map.put("title", "Home page");
-        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Page.html", map));
+        return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_200, "Page.html", map));
     }
 
     @EventHandler
     @PageData(directory = "/404")
     public Boolean connect404(ConnectionEvent event) {
-        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_404), "404Page.html"));
+        return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_404, "404Page.html"));
     }
 
     @EventHandler
@@ -31,13 +31,13 @@ public class ConnectionListener implements Listener {
     public Boolean jsonTest(ConnectionEvent event) {
         Json json = new Json();
         json.put("SomeKey", "SomeValue");
-        return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), json));
+        return event.getWriter().sendPage(new JsonResponse(ResponseCodes.Code_200, json));
     }
 
     @EventHandler
     @PageData(method = PageData.Method.POST, directory = "/postTest")
     public Boolean postTest(ConnectionEvent event) {
-        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "PostTest.html"));
+        return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_200, "PostTest.html"));
     }
 
     @EventHandler
@@ -47,37 +47,37 @@ public class ConnectionListener implements Listener {
         mapper.a = 11;
         mapper.string = "InsertString test";
         mapper.listName = Arrays.asList(new HtmlResponse("ejsTest/Test1.html").getResponse(), new HtmlResponse("ejsTest/Test2.html").getResponse());
-        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "ejsTest/ejsTest.html", Builder.buildData(mapper)));
+        return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_200, "ejsTest/ejsTest.html", Builder.buildData(mapper)));
     }
 
     @EventHandler
     @PageData(directory = "/bootstrapTest")
     public Boolean bootstrapTest(ConnectionEvent event) {
-        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "BootStrapTest.html"));
+        return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_200, "BootStrapTest.html"));
     }
 
     @EventHandler
     @PageData(directory = "/snake")
     public Boolean snake(ConnectionEvent event) {
-        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Test.html"));
+        return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_200, "Test.html"));
     }
 
     @EventHandler
     @PageData(directory = "/latex")
     public Boolean latex(ConnectionEvent event) {
-        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Latex.html"));
+        return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_200, "Latex.html"));
     }
 
     @EventHandler
     @PageData(method = PageData.Method.POST, directory = "/jsp")
     public Boolean jsonPostTest(final ConnectionEvent event) {
-        return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_404), new Json()));
+        return event.getWriter().sendPage(new JsonResponse(ResponseCodes.Code_404, new Json()));
     }
 
     @EventHandler
     @PageData(directory = "/404Json")
     public Boolean wrongJsonParameters(final ConnectionEvent event) {
-        return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_404), event.getData()));
+        return event.getWriter().sendPage(new JsonResponse(ResponseCodes.Code_404, event.getData()));
     }
 
     @EventHandler
@@ -85,7 +85,7 @@ public class ConnectionListener implements Listener {
     public Boolean dynamicDirectory(final DynamicConnectionEvent event) {
         Json json = new Json();
         json.put("username", event.getDynamicValue());
-        return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), json));
+        return event.getWriter().sendPage(new JsonResponse(ResponseCodes.Code_200, json));
     }
 
     @EventHandler
@@ -93,7 +93,7 @@ public class ConnectionListener implements Listener {
     @Data(values = {"name","value"})
     @PageData(method = PageData.Method.POST, directory = "/auth")
     public Boolean authTest(final ConnectionEvent event) {
-        return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), new Json()));
+        return event.getWriter().sendPage(new JsonResponse(ResponseCodes.Code_200, new Json()));
     }
 
     public static class Mapper {
