@@ -22,7 +22,7 @@ public abstract class RequiresAuthorization {
     /**
      * calls the handler to preform a token check
      *
-     * @param dir requested directory
+     * @param dir   requested directory
      * @param token submitted token
      * @return if the user is good to go
      */
@@ -37,18 +37,20 @@ public abstract class RequiresAuthorization {
     /**
      * Checks whether the users requests requires an authorization tokeb
      *
-     * @param dir   requested directory
+     * @param dir requested directory
      * @return status of authorization requirment
      */
     private boolean required(final String dir) {
         Method[] methods = listener.getClass().getDeclaredMethods();
         for (Method m : methods) {
             List<Annotation> list = Arrays.stream(m.getDeclaredAnnotations()).filter(o -> o.annotationType().equals(PageData.class)).collect(Collectors.toList());
-            PageData annotation = (PageData) list.get(0);
-            if (annotation.directory().equals(dir)) {
-                List<Annotation> filtered = Arrays.stream(m.getDeclaredAnnotations()).filter(o -> o.annotationType().equals(Authorization.class)).collect(Collectors.toList());
-                if (!filtered.isEmpty()) {
-                    return true;
+            if (list.size() == 1) {
+                PageData annotation = (PageData) list.get(0);
+                if (annotation.directory().equals(dir)) {
+                    List<Annotation> filtered = Arrays.stream(m.getDeclaredAnnotations()).filter(o -> o.annotationType().equals(Authorization.class)).collect(Collectors.toList());
+                    if (!filtered.isEmpty()) {
+                        return true;
+                    }
                 }
             }
         }
@@ -57,6 +59,7 @@ public abstract class RequiresAuthorization {
 
     /**
      * token check
+     *
      * @param token token
      * @return if its the right token
      */
