@@ -31,7 +31,7 @@ public class ConnectionListener implements Listener {
     @EventHandler
     @PageData
     public Boolean connect(ConnectionEvent event) {
-        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Page.html"));
+        return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_200, "Page.html"));
     }
 }
 ```
@@ -48,7 +48,7 @@ public class ConnectionListener implements Listener {
 public Boolean jsonTest(ConnectionEvent event) {
     Json json = new Json();
     json.put("SomeKey", "SomeValue");
-    return event.getWriter().sendPage(new JsonResponse(new Header(ResponseCodes.Code_200), json));
+    return event.getWriter().sendPage(new JsonResponse(ResponseCodes.Code_200, json));
 }
 ```
 * This would return, this functionality could be used to create a custom rest service
@@ -60,7 +60,7 @@ public Boolean jsonTest(ConnectionEvent event) {
 @EventHandler   
 @PageData(directory = "/bootstrapTest")
 public Boolean bootstrapTest(ConnectionEvent event) {
-    return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "BootStrapTest.html"));
+    return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_200, "BootStrapTest.html"));
 }
 ```
 
@@ -77,7 +77,7 @@ public class ConnectionListener implements Listener {
     public Boolean connect(ConnectionEvent event) {
         Map<String, Object> map = new HashMap<>();
         map.put("title", "Home page");
-        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "Page.html", map)); 
+        return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_200, "Page.html", map)); 
     }
 }
 ```
@@ -91,7 +91,7 @@ public class ConnectionListener implements Listener {
     @EventHandler
     @PageData(method = PageData.Method.POST, directory = "/postTest")
     public Boolean postTest(ConnectionEvent event) {
-        return event.getWriter().sendPage(new HtmlResponse(new Header(ResponseCodes.Code_200), "PostTest.html")); 
+        return event.getWriter().sendPage(new HtmlResponse(ResponseCodes.Code_200, "PostTest.html")); 
     }
 }
 ```
