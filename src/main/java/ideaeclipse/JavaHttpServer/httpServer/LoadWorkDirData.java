@@ -10,7 +10,10 @@ class LoadWorkDirData {
     private final Map<String, File> data;
 
     LoadWorkDirData(final File workDir) {
-        replace = workDir.getAbsolutePath() + "/";
+        if (System.getProperty("os.name").contains("Windows"))
+            replace = workDir.getAbsolutePath() + "\\";
+        else
+            replace = workDir.getAbsolutePath() + "/";
         this.data = getData(workDir);
     }
 

@@ -55,6 +55,8 @@ public class Response {
             Header header = new Header(code, Util.getFileExtention(file));
             header.add("Content-length", String.valueOf(file.length()));
             writeData(header, Files.readAllBytes(file.toPath()));
+        }else{
+            System.out.println("File is null");
         }
     }
 
