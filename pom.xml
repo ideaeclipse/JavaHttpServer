@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.ideaeclipse</groupId>
+    <artifactId>JavaHttpServer</artifactId>
+    <version>1.7</version>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.10</source>
+                        <target>1.10</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>com.ideaeclipse</groupId>
+            <artifactId>Async</artifactId>
+            <version>LATEST</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ideaeclipse</groupId>
+            <artifactId>JsonUtilities</artifactId>
+            <version>1.8</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ideaeclipse</groupId>
+            <artifactId>reflectionListener</artifactId>
+            <version>3.3</version>
+        </dependency>
+    </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>nexusServer</id>
+            <url>https://repository.thiessem.ca/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>
+</project>
