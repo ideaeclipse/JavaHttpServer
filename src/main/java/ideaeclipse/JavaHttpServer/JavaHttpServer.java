@@ -1,6 +1,6 @@
 package ideaeclipse.JavaHttpServer;
 
-import ideaeclipse.JavaHttpServer.httpServer.HttpServer;
+import ideaeclipse.JavaHttpServer.httpServer.objects.HttpServer;
 import ideaeclipse.reflectionListener.parents.Listener;
 
 import java.io.File;

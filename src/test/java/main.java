@@ -5,6 +5,6 @@ import java.util.concurrent.Executors;
 
 public class main {
     public static void main(String[] args) throws IOException {
-        new JavaHttpServer().executor(Executors.newWorkStealingPool()).registerEndpoints(new Endpoint1()).workDirectory("private").publicDirectory("public").start();
+        new JavaHttpServer().executor(Executors.newCachedThreadPool()).registerEndpoints(new Endpoint1()).workDirectory("private").publicDirectory("public").start();
     }
 }

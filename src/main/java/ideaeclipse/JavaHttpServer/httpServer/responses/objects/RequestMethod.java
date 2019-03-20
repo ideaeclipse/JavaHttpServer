@@ -1,4 +1,4 @@
-package ideaeclipse.JavaHttpServer.httpServer.responses;
+package ideaeclipse.JavaHttpServer.httpServer.responses.objects;
 
 /**
  * All methods that can be requested

@@ -1,4 +1,6 @@
-package ideaeclipse.JavaHttpServer.httpServer.responses;
+package ideaeclipse.JavaHttpServer.httpServer.responses.objects;
+
+import ideaeclipse.JavaHttpServer.httpServer.responses.IHeader;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -10,7 +12,7 @@ import java.util.Map;
  *
  * @author Ideaeclipse
  */
-public class Header {
+public class Header implements IHeader {
     private final static Map<String, String> MIME_MAP = new HashMap<>();
     private final static Map<Integer, String> codes = new HashMap<>();
     private final StringBuilder builder = new StringBuilder();
@@ -63,7 +65,7 @@ public class Header {
     /**
      * Adds a key value pair to the header
      *
-     * @param key key to add
+     * @param key   key to add
      * @param value value to add
      */
     public void add(final String key, final String value) {

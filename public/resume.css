@@ -1,0 +1,57 @@
+body {
+    font-family: Lato;
+    color: #2E2E2E;
+    margin-top: 200px;
+}
+
+a {
+    color: #2E2E2E;
+}
+
+a:visited {
+    color: #2E2E2E;
+}
+
+a:hover {
+    color: #000000;
+}
+
+a:active {
+    color: #000000;
+}
+
+.container {
+    text-align: center;
+    width: 400px;
+    margin: auto;
+}
+
+.name {
+    font-size: 40pt;
+    font-weight: bold;
+}
+
+.tagline {
+    font-variant: small-caps;
+    line-height: 35px;
+    font-size: 15pt;
+}
+
+.info {
+    margin-top: 10px;
+}
+
+.icon {
+    margin-left: 10px;
+}
+
+.iconWords {
+    margin-left: 1px;
+}
+
+.footline {
+    font-variant: small-caps;
+    text-align: right;
+    position: relative;
+    bottom: 0px;
+}

@@ -1,6 +1,8 @@
-package ideaeclipse.JavaHttpServer.httpServer.responses;
+package ideaeclipse.JavaHttpServer.httpServer.responses.objects;
 
 import ideaeclipse.JavaHttpServer.httpServer.Util;
+import ideaeclipse.JavaHttpServer.httpServer.responses.IHeader;
+import ideaeclipse.JavaHttpServer.httpServer.responses.IResponse;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -14,7 +16,7 @@ import java.util.Map;
  *
  * @author Ideaeclipse
  */
-public class Response {
+public class Response implements IResponse {
     private final Socket socket;
     private final Map<String, File> privateData;
 
@@ -52,11 +54,12 @@ public class Response {
      */
     public void sendFile(final int code, final File file) throws IOException {
         if (file != null) {
-            Header header = new Header(code, Util.getFileExtention(file));
+            IHeader header = new Header(code, Util.getFileExtention(file));
             header.add("Content-length", String.valueOf(file.length()));
             writeData(header, Files.readAllBytes(file.toPath()));
-        }else{
+        } else {
             System.out.println("File is null");
+            Util.blank(socket);
         }
     }
 
@@ -68,7 +71,7 @@ public class Response {
      * @throws IOException if header can't be generated
      */
     public void sendJson(final int code, final String string) throws IOException {
-        Header header = new Header(code, "json");
+        IHeader header = new Header(code, "json");
         header.add("Content-length", String.valueOf(string.getBytes().length));
         writeData(header, string.getBytes());
     }
@@ -80,7 +83,7 @@ public class Response {
      * @param bytes  attachment as byte array
      * @throws IOException if data can't be written
      */
-    private void writeData(final Header header, final byte[] bytes) throws IOException {
+    private void writeData(final IHeader header, final byte[] bytes) throws IOException {
         this.socket.getOutputStream().write(header.getHeader().getBytes());
 
         this.socket.getOutputStream().flush();

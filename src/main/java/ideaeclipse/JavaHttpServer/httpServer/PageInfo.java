@@ -1,6 +1,6 @@
 package ideaeclipse.JavaHttpServer.httpServer;
 
-import ideaeclipse.JavaHttpServer.httpServer.responses.RequestMethod;
+import ideaeclipse.JavaHttpServer.httpServer.responses.objects.RequestMethod;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
