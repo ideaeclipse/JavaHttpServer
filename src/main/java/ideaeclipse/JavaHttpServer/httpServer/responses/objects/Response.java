@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Allows each endpoint to send a response
  *
- * @author Ideaeclipse
+ * @author Myles T
  */
 public class Response implements IResponse {
     private final Socket socket;
@@ -54,7 +54,7 @@ public class Response implements IResponse {
      */
     public void sendFile(final int code, final File file) throws IOException {
         if (file != null) {
-            IHeader header = new Header(code, Util.getFileExtention(file));
+            IHeader header = new Header(code, Util.getFileExtension(file));
             header.add("Content-length", String.valueOf(file.length()));
             writeData(header, Files.readAllBytes(file.toPath()));
         } else {

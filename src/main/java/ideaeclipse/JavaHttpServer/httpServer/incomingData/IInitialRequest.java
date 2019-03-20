@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Used to parse the header when a request is send
  *
- * @author Ideaeclipse
+ * @author Myles T
  */
 public interface IInitialRequest {
     /**

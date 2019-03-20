@@ -9,7 +9,7 @@ import java.io.IOException;
  * This class is used to generate and send responses over the socket
  * This class is intended to be used by the user
  *
- * @author Ideaeclipse
+ * @author Myles T
  * @see Response
  */
 public interface IResponse {
@@ -20,7 +20,7 @@ public interface IResponse {
      * @param code   response code, i.e 200
      * @param string file name, i.e test.html
      * @throws IOException if the file can't be found a blank response is returned
-     * @see ideaeclipse.JavaHttpServer.httpServer.objects.LoadWorkDirData
+     * @see ideaeclipse.JavaHttpServer.httpServer.objects.HttpServer.LoadWorkDirData
      */
     void sendFile(final int code, final String string) throws IOException;
 

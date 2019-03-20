@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutorService;
  * TODO: Auto loader to update LoadWorkDir's When a change is detected (https://stackoverflow.com/questions/23452527/watching-a-directory-for-changes-in-java)
  * This class handles all traffic and starts a service eventide a connection is started with the socket
  *
- * @author Ideaeclipse
+ * @author Myles T
  * @see ideaeclipse.JavaHttpServer.JavaHttpServer
  * @see LoadWorkDirData
  */
@@ -65,7 +65,7 @@ public class HttpServer {
     /**
      * This class will load all files from a specific directory
      *
-     * @author Ideaeclipse
+     * @author Myles T
      * @see HttpServer
      * @see ideaeclipse.JavaHttpServer.JavaHttpServer
      */
@@ -128,7 +128,7 @@ public class HttpServer {
      * TODO: Dynamic Directories
      * This class is invoked every time a new connection is started
      *
-     * @author Ideaeclipse
+     * @author Myles T
      * @see HttpServer
      */
     private static class InputHandler implements Runnable {

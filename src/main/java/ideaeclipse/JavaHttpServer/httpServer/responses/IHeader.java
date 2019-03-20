@@ -10,7 +10,7 @@ import java.util.Map;
  * Used to generate a valid header. This class really isn't meant for users to interact with
  * if you want to generate a response see {@link Response#Response(Socket, Map)}
  *
- * @author Ideaeclipse
+ * @author Myles T
  * @see Header
  */
 public interface IHeader {

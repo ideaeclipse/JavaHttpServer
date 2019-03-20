@@ -10,7 +10,7 @@ import java.util.Map;
  * Takes a response code and a attachment type
  * and generates a valid http header
  *
- * @author Ideaeclipse
+ * @author Myles T
  */
 public class Header implements IHeader {
     private final static Map<String, String> MIME_MAP = new HashMap<>();

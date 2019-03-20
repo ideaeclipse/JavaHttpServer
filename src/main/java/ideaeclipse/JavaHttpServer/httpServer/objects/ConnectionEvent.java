@@ -12,7 +12,7 @@ import java.util.Map;
  * See README for examples of how to implement this for your endpoints
  * This is an endpoint param for when your endpoint is static
  *
- * @author Ideaeclipse
+ * @author Myles T
  */
 public class ConnectionEvent extends Event {
     private final IResponse response;

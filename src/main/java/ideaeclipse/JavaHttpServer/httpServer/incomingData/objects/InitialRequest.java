@@ -9,7 +9,7 @@ import java.util.*;
 /**
  * Takes the initial input data from the http request and parses it
  *
- * @author Ideaeclipse
+ * @author Myles T
  */
 public class InitialRequest implements IInitialRequest {
     private final RequestMethod method;
