@@ -40,7 +40,7 @@ public class InitialRequest implements IInitialRequest {
         List<String> parsedLine1 = Arrays.asList(input.get(0).split(" "));
         this.method = RequestMethod.valueOf(parsedLine1.get(0));
         List<String> parsedDirectory = Arrays.asList(parsedLine1.get(1).split("\\?"));
-        this.directory = parsedDirectory.get(0);
+        this.directory = (parsedDirectory.get(0).endsWith("/") && parsedDirectory.get(0).length() > 1 ? parsedDirectory.get(0).substring(0, parsedDirectory.get(0).length() - 1) : parsedDirectory.get(0));
         if (parsedDirectory.size() == 2) {
             for (String string : parsedDirectory.get(1).split("&")) {
                 List<String> parsedValues = Arrays.asList(string.split("="));

@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 /**
+ * TODO: Reflection listener superClass for Event, loop till its found or java.lang.Object is hit
  * TODO: Check size of params in Reflection listener lib ***********************************
  * TODO: Close connection if header isn't received within 1 second to avoid java connections
  * TODO: Auto loader to update LoadWorkDir's When a change is detected (https://stackoverflow.com/questions/23452527/watching-a-directory-for-changes-in-java)
@@ -80,6 +81,7 @@ public class HttpServer {
      * @return true if all tests pass for each endpoint, false if one test fails
      */
     private boolean checkEndPoints(final List<Listener> listeners, final List<String> dynamicDirectories) {
+        final List<String> endpoints = new LinkedList<>();
         int staticEndpoints = 0;
         int dynamicEndpoints = 0;
         for (Listener listener : listeners) {
@@ -91,7 +93,8 @@ public class HttpServer {
                             if (method.getParameterTypes()[0].equals(DynamicConnectionEvent.class)) {
                                 if (info.directory().chars().filter(ch -> ch == '{').count() == info.directory().chars().filter(ch -> ch == '}').count() && checkDynamicDirectory(info.directory())) {
                                     System.out.println("Dynamic end-point registered: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " with dynamic keys: " + Arrays.toString(Arrays.stream(info.directory().split("[\\\\{}]")).filter(o -> !o.startsWith("/")).toArray()) + " and method: " + info.method());
-                                    dynamicDirectories.add(info.directory());
+                                    dynamicDirectories.add((info.directory().endsWith("/") ? info.directory().substring(0, info.directory().length() - 1) : info.directory()));
+                                    endpoints.add(info.directory());
                                     dynamicEndpoints++;
                                 } else {
                                     System.err.println("ERROR: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " and method: " + info.method());
@@ -112,6 +115,7 @@ public class HttpServer {
                         if (method.getParameterCount() == 1) {
                             if (method.getParameterTypes()[0].equals(ConnectionEvent.class)) {
                                 System.out.println("Static end-point registered: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " and method: " + info.method());
+                                endpoints.add(info.directory());
                                 staticEndpoints++;
                             } else {
                                 System.err.println("ERROR: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " and method: " + info.method());
@@ -126,6 +130,12 @@ public class HttpServer {
                     }
                 }
             }
+        }
+        List<Object> duplicates = Arrays.asList(endpoints.stream().filter(e -> Collections.frequency(endpoints, e) > 1).distinct().toArray());
+        if (duplicates.size() > 0) {
+            System.err.println("ERROR: You have duplicate endpoints, there is not support for duplicate endpoints please remove one");
+            System.err.println("ERROR: They are: " + duplicates);
+            return false;
         }
         System.out.format("There are %d static endpoints with %d dynamic endpoints\n", staticEndpoints, dynamicEndpoints);
         System.out.println("If you where expecting other endpoints to be loaded, ensure you passed the end point class to the register, and ensure the methods have the proper annotations");
@@ -260,11 +270,10 @@ public class HttpServer {
         }
 
         /**
-         * TODO: Seperate parsing into methods to compartmentalize the connection process
          * TODO: check multiple End points on launch not every connection
          * TODO: Check that if the end point calls for a dynamic end point that it has the Dynamic Event param.
          * <p>
-         * This method is invoked everytime an incoming connection is active
+         * This method is invoked every time an incoming connection is active
          * It parses the data using {@link InitialRequest} logs all data to screen
          * if the path requested is a public path then send the file to the user
          * if its a valid endpoint execute the end point
@@ -294,26 +303,19 @@ public class HttpServer {
                     response.sendFile(200, this.publicData.get(directoryParsed));
                 } else {
                     System.out.println("Method request");
-                    System.out.println(isDynamic(directory));
-                    ConnectionEvent event = new ConnectionEvent(response, request);
-                    List<Executable> executableList = this.manager.getExecutablesByAnnotation(event, PageInfo.class, method, directory);
-                    switch (executableList.size()) {
-                        case 0:
-                            if (method == RequestMethod.GET)
-                                Util.redirect(this.socket, "/");
-                            else
-                                Util.blank(this.socket);
-                            break;
-                        case 1:
-                            executableList.get(0).execute();
-                            //TODO: allow for customizable response
-                            if (!this.socket.isClosed()) {
-                                Util.blank(this.socket);
-                            }
-                            break;
-                        default:
-                            System.err.println("You have multiple end points defined for " + directory);
-                            break;
+                    HashMap<String, String> dynamicData = new HashMap<>();
+                    String s = isDynamic(directory, dynamicData);
+                    if (s.length() == 0) {
+                        System.out.println("End point requested is static: " + directory);
+                        ConnectionEvent event = new ConnectionEvent(response, request);
+                        List<Executable> executableList = this.manager.getExecutablesByAnnotation(event, PageInfo.class, method, directory);
+                        execute(executableList, method, directory);
+                    } else {
+                        System.out.println("End point requested is dynamic: " + s);
+                        DynamicConnectionEvent event = new DynamicConnectionEvent(response, request, dynamicData);
+                        List<Executable> executableList = this.manager.getExecutablesByAnnotation(event, PageInfo.class, method, s);
+                        execute(executableList, method, s);
+
                     }
                 }
             } catch (IOException | EventNotFound e) {
@@ -321,11 +323,51 @@ public class HttpServer {
             }
         }
 
-        private boolean isDynamic(final String request) {
-            for(String dynamicModel: dynamicDirectories) {
-                System.out.println(Arrays.toString(dynamicModel.split("[\\\\{}]")));
+        /**
+         * @param request
+         * @param dynamicData
+         * @return
+         */
+        private String isDynamic(final String request, final Map<String, String> dynamicData) {
+            String data = "";
+            for (String dynamicModel : dynamicDirectories) {
+                if (dynamicModel.chars().filter(ch -> ch == '/').count() == request.chars().filter(ch -> ch == '/').count()) {
+                    data = dynamicModel;
+                    for (String temp : dynamicModel.split("[\\\\{}]")) {
+                        if (temp.startsWith("/") && temp.endsWith("/")) {
+                            String dTemp = dynamicModel.substring(dynamicModel.indexOf(temp) + temp.length());
+                            String rTemp = request.substring(request.indexOf(temp) + temp.length());
+                            dTemp = (dTemp.contains("/") ? dTemp.substring(0, dTemp.indexOf("/")) : dTemp);
+                            rTemp = (rTemp.contains("/") ? rTemp.substring(0, rTemp.indexOf("/")) : rTemp);
+                            dTemp = dTemp.substring(1, dTemp.length() - 1);
+                            dynamicData.put(dTemp, rTemp);
+                        }
+                    }
+                    break;
+                }
             }
-            return true;
+            return data;
+        }
+
+        private void execute(final List<Executable> executableList, final RequestMethod method, final String directory) throws IOException, EventNotFound {
+            switch (executableList.size()) {
+                case 0:
+                    if (method == RequestMethod.GET)
+                        Util.redirect(this.socket, "/");
+                    else
+                        Util.blank(this.socket);
+                    break;
+                case 1:
+                    executableList.get(0).execute();
+                    //TODO: allow for customizable response
+                    if (!this.socket.isClosed()) {
+                        Util.blank(this.socket);
+                    }
+                    break;
+                default:
+                    System.err.println("You have multiple end points defined for " + directory);
+                    break;
+            }
         }
 
     }

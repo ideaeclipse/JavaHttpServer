@@ -19,6 +19,7 @@ public class Endpoint1 implements Listener {
             e.printStackTrace();
         }
     }
+
     @CallableEvent
     @PageInfo(method = RequestMethod.GET, directory = "/jsonResponse")
     public void test2(final ConnectionEvent event) {
@@ -42,9 +43,16 @@ public class Endpoint1 implements Listener {
             e.printStackTrace();
         }
     }
+
     @CallableEvent
     @PageInfo(directory = "/users/{id}/messages/{message-id}")
-    public void dynamicTest(final DynamicConnectionEvent event){
+    public void dynamicTest(final DynamicConnectionEvent event) {
+        System.out.println(event.getDynamicData());
+    }
+
+    @CallableEvent
+    @PageInfo(directory = "/users/{id}")
+    public void dynamicTest2(final DynamicConnectionEvent event) {
         System.out.println("Dicks");
     }
 }
