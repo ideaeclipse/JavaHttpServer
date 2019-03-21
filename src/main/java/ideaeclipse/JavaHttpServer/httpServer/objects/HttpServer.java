@@ -324,15 +324,30 @@ public class HttpServer {
         }
 
         /**
-         * @param request
-         * @param dynamicData
-         * @return
+         * This method checks to see if a directory that was requested matches with one of the dynamic directories declared
+         * inside the endpoint listener files.
+         * The dynamicDirectories where stored when the server started up
+         * First step is to compare the number of forward slashes with the dynamicData if they are equal then check to see
+         * if all the values that aren't inside the curly braces are contained inside the passed request. If they are
+         * then split all of them into a map and return the dynamicModel that was it. If one doesn't exist a string of
+         * length 0 will be returned
+         *
+         * @param request     directory requested by the user
+         * @param dynamicData where to store data
+         * @return dynamic directory endpoint from inside the endpoint file(s)
          */
         private String isDynamic(final String request, final Map<String, String> dynamicData) {
             String data = "";
+            outer:
             for (String dynamicModel : dynamicDirectories) {
                 if (dynamicModel.chars().filter(ch -> ch == '/').count() == request.chars().filter(ch -> ch == '/').count()) {
                     data = dynamicModel;
+                    for (String temp : dynamicModel.split("[\\\\{}]")) {
+                        if (temp.startsWith("/") && temp.endsWith("/")) {
+                            if (!request.contains(temp))
+                                continue outer;
+                        }
+                    }
                     for (String temp : dynamicModel.split("[\\\\{}]")) {
                         if (temp.startsWith("/") && temp.endsWith("/")) {
                             String dTemp = dynamicModel.substring(dynamicModel.indexOf(temp) + temp.length());
@@ -349,6 +364,15 @@ public class HttpServer {
             return data;
         }
 
+        /**
+         * Executes a directory if one exists, else return a blank one or redirect to /
+         *
+         * @param executableList list of executables see {@link InputHandler}
+         * @param method         i.e. GET see {@link RequestMethod}
+         * @param directory      directory model from file
+         * @throws IOException   if data can't be written to socket
+         * @throws EventNotFound if the event can't be found
+         */
         private void execute(final List<Executable> executableList, final RequestMethod method, final String directory) throws IOException, EventNotFound {
             switch (executableList.size()) {
                 case 0:

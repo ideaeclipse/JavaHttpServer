@@ -47,7 +47,13 @@ public class Endpoint1 implements Listener {
     @CallableEvent
     @PageInfo(directory = "/users/{id}/messages/{message-id}")
     public void dynamicTest(final DynamicConnectionEvent event) {
-        System.out.println(event.getDynamicData());
+        System.out.println("A: " +event.getDynamicData());
+    }
+
+    @CallableEvent
+    @PageInfo(directory = "/user/{id}/message/{message-id}")
+    public void dynamicTest3(final DynamicConnectionEvent event) {
+        System.out.println("B: " + event.getDynamicData());
     }
 
     @CallableEvent
