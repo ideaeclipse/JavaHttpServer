@@ -83,6 +83,7 @@ public class JavaHttpServer {
 
     /**
      * This is a directory where all your other files are located.
+     * This is where your css, pdf, gif, png, etc.. files should be located
      * For example any file you want to display through direct access, like http://localhost/test.pdf
      * This will load the test.pdf file in the declared public directory
      *

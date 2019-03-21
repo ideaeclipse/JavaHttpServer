@@ -10,21 +10,22 @@ import ideaeclipse.JavaHttpServer.httpServer.responses.objects.Response;
 import ideaeclipse.reflectionListener.Exceptions.EventNotFound;
 import ideaeclipse.reflectionListener.Executable;
 import ideaeclipse.reflectionListener.ListenerManager;
+import ideaeclipse.reflectionListener.annotations.CallableEvent;
 import ideaeclipse.reflectionListener.parents.Listener;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 /**
+ * TODO: Check size of params in Reflection listener lib ***********************************
  * TODO: Close connection if header isn't received within 1 second to avoid java connections
  * TODO: Auto loader to update LoadWorkDir's When a change is detected (https://stackoverflow.com/questions/23452527/watching-a-directory-for-changes-in-java)
+ * TODO: * end-point accept all traffic
  * This class handles all traffic and starts a service eventide a connection is started with the socket
  *
  * @author Myles T
@@ -32,8 +33,6 @@ import java.util.concurrent.ExecutorService;
  * @see LoadWorkDirData
  */
 public class HttpServer {
-    private final ListenerManager listenerManager = new ListenerManager();
-
     /**
      * All params are passed from {@link ideaeclipse.JavaHttpServer.JavaHttpServer}
      * This loads both passed directories and starts a ServerSocket, the port must be available or an error message
@@ -47,19 +46,125 @@ public class HttpServer {
      */
     public HttpServer(final List<Listener> listeners, final int port, final ExecutorService service, final File privateDir, final File publicDir) {
         try {
-            for (Listener listener : listeners) {
-                this.listenerManager.registerListener(listener);
-            }
-            LoadWorkDirData privateData = new LoadWorkDirData(privateDir);
-            LoadWorkDirData publicData = new LoadWorkDirData(publicDir);
-            ServerSocket serverSocket = new ServerSocket(port);
-            while (!service.isShutdown()) {
-                service.submit(new InputHandler(listenerManager, serverSocket.accept(), privateData.getData(), publicData.getData()));
+            final List<String> dynamicDirectories = new LinkedList<>();
+            if (checkEndPoints(listeners, dynamicDirectories)) {
+                ListenerManager listenerManager = new ListenerManager();
+                for (Listener listener : listeners) {
+                    listenerManager.registerListener(listener);
+                }
+                LoadWorkDirData privateData = new LoadWorkDirData(privateDir);
+                LoadWorkDirData publicData = new LoadWorkDirData(publicDir);
+                ServerSocket serverSocket = new ServerSocket(port);
+                while (!service.isShutdown()) {
+                    service.submit(new InputHandler(listenerManager, serverSocket.accept(), privateData.getData(), publicData.getData(), dynamicDirectories));
+                }
+            } else {
+                if (Thread.currentThread().getName().equals("main"))
+                    System.exit(-1);
+                else
+                    Thread.currentThread().stop();
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * This method is used to check all the endpoints for validity
+     * For all endpoints they must have 2 annotations, {@link PageInfo} and {@link CallableEvent}
+     * If the endpoint is static it must have the method parameter of type {@link ConnectionEvent}
+     * If the endpoint is dynamic it must have the method parameter of type {@link DynamicConnectionEvent}
+     *
+     * @param listeners list of literes passed from {@link ideaeclipse.JavaHttpServer.JavaHttpServer}
+     * @return true if all tests pass for each endpoint, false if one test fails
+     */
+    private boolean checkEndPoints(final List<Listener> listeners, final List<String> dynamicDirectories) {
+        int staticEndpoints = 0;
+        int dynamicEndpoints = 0;
+        for (Listener listener : listeners) {
+            for (Method method : listener.getClass().getDeclaredMethods()) {
+                PageInfo info = method.getAnnotation(PageInfo.class);
+                if (info != null && method.getAnnotation(CallableEvent.class) != null) {
+                    if (info.directory().contains("{") && info.directory().contains("}")) {
+                        if (method.getParameterCount() == 1) {
+                            if (method.getParameterTypes()[0].equals(DynamicConnectionEvent.class)) {
+                                if (info.directory().chars().filter(ch -> ch == '{').count() == info.directory().chars().filter(ch -> ch == '}').count() && checkDynamicDirectory(info.directory())) {
+                                    System.out.println("Dynamic end-point registered: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " with dynamic keys: " + Arrays.toString(Arrays.stream(info.directory().split("[\\\\{}]")).filter(o -> !o.startsWith("/")).toArray()) + " and method: " + info.method());
+                                    dynamicDirectories.add(info.directory());
+                                    dynamicEndpoints++;
+                                } else {
+                                    System.err.println("ERROR: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " and method: " + info.method());
+                                    System.err.println("ERROR: Your formatting for the dynamic directory is incorrect see documentation");
+                                    return false;
+                                }
+                            } else {
+                                System.err.println("ERROR: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " and method: " + info.method());
+                                System.err.println("ERROR: You can't have a static directory with a ConnectionEvent, change this to a DynamicConnectionEvent object or change your end point to a static one");
+                                return false;
+                            }
+                        } else {
+                            System.err.println("ERROR: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " and method: " + info.method());
+                            System.err.println("ERROR: You must have a DynamicConnectionEvent object as your endpoint parameter");
+                            return false;
+                        }
+                    } else {
+                        if (method.getParameterCount() == 1) {
+                            if (method.getParameterTypes()[0].equals(ConnectionEvent.class)) {
+                                System.out.println("Static end-point registered: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " and method: " + info.method());
+                                staticEndpoints++;
+                            } else {
+                                System.err.println("ERROR: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " and method: " + info.method());
+                                System.err.println("ERROR: You can't have a static directory with a DynamicConnectionEvent, change this to a ConnectionEvent object or change your end point to a dynamic one");
+                                return false;
+                            }
+                        } else {
+                            System.err.println("ERROR: Method: " + method.getName() + " in: " + listener.getClass() + " with endpoint: " + info.directory() + " and method: " + info.method());
+                            System.err.println("ERROR: You must have a ConnectionEvent object as your endpoint parameter");
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        System.out.format("There are %d static endpoints with %d dynamic endpoints\n", staticEndpoints, dynamicEndpoints);
+        System.out.println("If you where expecting other endpoints to be loaded, ensure you passed the end point class to the register, and ensure the methods have the proper annotations");
+        System.out.println("Your end points are loaded correctly, Starting HttpServer");
+        return true;
+    }
+
+    /**
+     * Loops through a PageInfo directory string.
+     * open being true means that the function is expecting a open brace
+     * close being true means that the function is expecting a close brace
+     * if open is true close is false and vice versa
+     * if the function encounters a open brace when it was expecting a close the formatting is wrong, returns false
+     * if the function encounters a close brace when it was expecting a open the formatting is wrong, returns false
+     * if the loop can finish succesffully then the formatting is correct and will return true
+     *
+     * @param string directory string
+     * @return true if formatting is correct, false if formatting is inccorrect
+     */
+    @SuppressWarnings("ALL")
+    private boolean checkDynamicDirectory(final String string) {
+        boolean open = true;
+        boolean close = false;
+        for (char c : string.toCharArray()) {
+            if (c == '{') {
+                if (open) {
+                    open = false;
+                    close = true;
+                } else if (close)
+                    return false;
+            } else if (c == '}') {
+                if (close) {
+                    close = false;
+                    open = true;
+                } else if (open)
+                    return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -136,6 +241,7 @@ public class HttpServer {
         private final Socket socket;
         private final Map<String, File> privateData;
         private final Map<String, File> publicData;
+        private final List<String> dynamicDirectories;
 
         /**
          * Called from {@link HttpServer}
@@ -145,11 +251,12 @@ public class HttpServer {
          * @param privateData map of all files in the privateData directory
          * @param publicData  map of all files in the publicData directory
          */
-        InputHandler(final ListenerManager manager, final Socket socket, final Map<String, File> privateData, final Map<String, File> publicData) {
+        InputHandler(final ListenerManager manager, final Socket socket, final Map<String, File> privateData, final Map<String, File> publicData, final List<String> dynamicDirectories) {
             this.manager = manager;
             this.socket = socket;
             this.privateData = privateData;
             this.publicData = publicData;
+            this.dynamicDirectories = dynamicDirectories;
         }
 
         /**
@@ -187,6 +294,7 @@ public class HttpServer {
                     response.sendFile(200, this.publicData.get(directoryParsed));
                 } else {
                     System.out.println("Method request");
+                    System.out.println(isDynamic(directory));
                     ConnectionEvent event = new ConnectionEvent(response, request);
                     List<Executable> executableList = this.manager.getExecutablesByAnnotation(event, PageInfo.class, method, directory);
                     switch (executableList.size()) {
@@ -199,7 +307,7 @@ public class HttpServer {
                         case 1:
                             executableList.get(0).execute();
                             //TODO: allow for customizable response
-                            if(!this.socket.isClosed()){
+                            if (!this.socket.isClosed()) {
                                 Util.blank(this.socket);
                             }
                             break;
@@ -211,6 +319,13 @@ public class HttpServer {
             } catch (IOException | EventNotFound e) {
                 e.printStackTrace();
             }
+        }
+
+        private boolean isDynamic(final String request) {
+            for(String dynamicModel: dynamicDirectories) {
+                System.out.println(Arrays.toString(dynamicModel.split("[\\\\{}]")));
+            }
+            return true;
         }
 
     }

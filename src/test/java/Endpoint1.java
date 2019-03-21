@@ -1,5 +1,6 @@
 import ideaeclipse.JavaHttpServer.httpServer.objects.ConnectionEvent;
 import ideaeclipse.JavaHttpServer.httpServer.PageInfo;
+import ideaeclipse.JavaHttpServer.httpServer.objects.DynamicConnectionEvent;
 import ideaeclipse.JavaHttpServer.httpServer.responses.objects.RequestMethod;
 import ideaeclipse.JsonUtilities.Json;
 import ideaeclipse.reflectionListener.annotations.CallableEvent;
@@ -17,9 +18,7 @@ public class Endpoint1 implements Listener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
     @CallableEvent
     @PageInfo(method = RequestMethod.GET, directory = "/jsonResponse")
     public void test2(final ConnectionEvent event) {
@@ -42,5 +41,10 @@ public class Endpoint1 implements Listener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    @CallableEvent
+    @PageInfo(directory = "/users/{id}/messages/{message-id}")
+    public void dynamicTest(final DynamicConnectionEvent event){
+        System.out.println("Dicks");
     }
 }
